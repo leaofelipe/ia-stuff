@@ -16,8 +16,8 @@ As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda sa
 | `/explain-pr` | Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review. |
 | `/humanizer` | Reescreve texto com cara de IA para soar como quem escreveu, sem mudar o que o texto diz. |
 | `/spec-lean` | Spec de feature em quatro passos: um plano revisado por humano, checks com prova, build e um Verifier independente que não é quem construiu, com os artefatos em `.notebook/specs/`. |
-| `/ia-slop-remove` | Tira do diff da branch o código com cara de IA. |
-| `/simplify-code` | Revisa o diff em qualidade, performance e reuso, e aplica as simplificações. |
+| `/ia-slop-remove` | Tira do diff da branch o código com cara de IA (comentários, código que não precisava, etc). |
+| `/simplify-code` | Simplifica o código do diff, focando em abstrações desnecessárias, lógica que já existe em outro lugar do projeto e gargalos de performance. |
 | `/test-surgery` | Tira a redundância dos testes, só nos arquivos em que é chamada: testes repetidos viram tabela, setup repetido vira builder e o que não verifica nada sai. Um diff de cobertura linha a linha prova que nenhum comportamento se perdeu, e o resultado sai em tabelas no chat. |
 
 Todas as skills são MIT, exceto `spec-lean`, que mantém a CC-BY-4.0 do original, e `simplify-code`, adaptado de um comando do Cursor sem licença pública conhecida.
