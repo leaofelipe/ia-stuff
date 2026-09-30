@@ -2,6 +2,7 @@
 name: explain-pr
 description: Teach a pull/merge request didactically in plain language, one item at a time, from foundation to connected pieces. Understanding beats jargon. Use when the user wants to understand what an MR/PR did — not to review it — or uses explain-pr, /explain-pr, walkthrough, or "explica esse PR".
 argument-hint: "PR/MR URL or number"
+license: MIT
 disable-model-invocation: true
 ---
 

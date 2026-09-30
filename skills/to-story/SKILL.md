@@ -1,6 +1,7 @@
 ---
 name: to-story
 description: Turn a discovery dump, agent-generated text, existing Jira card, or one-line idea into a short human-readable Jira story. Use when the user says to-story, /to-story, or asks to draft, sanitize, or rewrite a card for a PO or a developer.
+license: MIT
 disable-model-invocation: true
 ---
 

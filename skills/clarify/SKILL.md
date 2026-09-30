@@ -1,6 +1,7 @@
 ---
 name: clarify
 description: Clarify a plan, decision, or idea through a relentless interview until shared understanding. Use when the user wants to get clear on a topic, stress-test their thinking, or uses any 'clarify' trigger phrases.
+license: MIT
 disable-model-invocation: true
 ---
 

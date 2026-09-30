@@ -1,12 +1,15 @@
 # ia-stuff
 
-Pacote de skills de IA. Tudo fica em `skills/`; o que a skill grava em tempo de execução vai para `.notebook/` no projeto que a consome.
+Pacote de skills de IA. Tudo fica em `skills/`.
+
+As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda saída que precisa ser gravada vai por padrão para a pasta `.notebook/` na raiz do projeto que as consome. Assim um brief do `handoff` fica num lugar previsível, onde outras skills e sessões podem encontrá-lo.
+
+**Algumas skills são pessoais; outras são forks de skills já existentes, adaptadas para o meu dia a dia.**
 
 ## Skills
 
 - **`clarify`** — Entrevista sem trégua, em rodadas (árvore de design + fronteira), até o entendimento compartilhado. Só com invocação explícita.
-- **`save-discussion`** — Depois de um clarify, persiste as decisões fechadas **desta discussão**.
-- **`handoff`** — Compacta a conversa atual num brief para outra sessão ou outro agente.
+- **`handoff`** — Salva o contexto da conversa atual e as decisões tomadas para você retomar o trabalho num novo chat, com a janela de contexto limpa. Pode ser usado em qualquer conversa, não só depois de um clarify.
 - **`to-story`** — Transforma um dump de discovery, texto de agente, card do Jira ou uma ideia de uma linha numa história curta e legível. Só com invocação explícita.
 - **`explain-pr`** — Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review. Só com invocação explícita.
 - **`humanizer`** — Reescreve texto com cara de IA para soar como quem escreveu, sem mudar o que o texto diz.
@@ -15,8 +18,6 @@ Pacote de skills de IA. Tudo fica em `skills/`; o que a skill grava em tempo de 
 
 ```
 .notebook/
-├── discussions/                 # resultados do save-discussion
-│   └── dd-mm-yy-tema.md
 └── handoff/                     # briefs do handoff
     └── dd-mm-yy-tema.md
 ```
@@ -25,18 +26,19 @@ Pacote de skills de IA. Tudo fica em `skills/`; o que a skill grava em tempo de 
 
 ```mermaid
 flowchart TD
-    ideia[ideia / problema] --> clarify[clarify]
-    clarify --> docs[save-discussion]
-    docs --> disc[".notebook/discussions/dd-mm-yy-tema.md"]
-    conversa[conversa atual] -.->|novo chat + mesmo contexto| ho["handoff -> .notebook/handoff/"]
-    ideia -->|card para o Jira| story[to-story]
-    disc -.->|referência manual| story
+    ideia[ideia ou problema] --> clarify
+    ideia --> story[to-story]
+    clarify -->|implementar agora| impl[implementação no mesmo chat]
+    clarify -->|salvar decisões| handoff
+    handoff --> novo["novo chat com o brief<br/>.notebook/handoff/"]
+    handoff -.->|brief como referência| story
+    story --> jira[card no Jira]
 ```
 
 1. **`clarify`** quando a ideia ainda precisa de um entendimento compartilhado.
-2. **`save-discussion`** quando a fronteira está vazia — grava a nota da discussão.
-3. **`handoff`** em qualquer conversa atual — uma sessão de clarify ou qualquer outro chat — para abrir um novo chat com o mesmo contexto.
-4. **`to-story`** para transformar a ideia, uma nota de discussão ou um dump de discovery num card do Jira.
+2. Ao fim do clarify, implemente direto no mesmo chat ou use o **`handoff`** para continuar em outro.
+3. **`handoff`** em qualquer conversa atual — uma sessão de clarify ou qualquer outro chat — para abrir um novo chat com o mesmo contexto e as decisões registradas.
+4. **`to-story`** para transformar a ideia, um brief do handoff ou um dump de discovery num card do Jira.
 
 ## Modos do `to-story`
 
