@@ -83,13 +83,13 @@ Optional, only when they earn their place:
 - `## Subtasks` — only if the source lists them.
 - Any other section that genuinely helps this card.
 
-Use `##` headings (Jira Cloud converts them). No markdown tables (Jira leaves pipes literal). Rewrite the card title, keeping any prefix the source card already has. Optional: the team's card title prefixes are best configured in `AGENTS.md`; follow them when present, and never invent one. Output language matches the source language; translate section titles with it.
+Use `##` headings (Jira Cloud converts them). No markdown tables (Jira leaves pipes literal). Rewrite the card title, keeping any prefix the source card already has and never inventing one. Output language matches the source language; translate section titles with it.
 
 ## Delivery
 
 1. **Discard line** — first, only when something was actually cut. Categories and reason, no dumped content. Example: "Descartei nomes de arquivo, caminhos de pasta e constantes de evento, porque descrevem como fazer, não o que se espera do card." If nothing was cut, start with the rendered card.
 2. **Rendered card** — title, then the body. Pendings are the last lines of the body.
-3. **Approval to write** — Jira mode only. Never write right after drafting. Show the rendered card first, then always ask for approval to write it, stating where: update the source card or create a new one. To create, ask for the project if `AGENTS.md` does not define it. Write only after an explicit yes for this exact content; an approval never carries over to a redraft or another card. If the user asks for changes, redraft, show it again, and ask again. Send the body in the format the tool expects.
+3. **Approval to write** — Jira mode only. Never write right after drafting. Show the rendered card first, then always ask for approval to write it, stating where: update the source card or create a new one. Write only after an explicit yes for this exact content; an approval never carries over to a redraft or another card. If the user asks for changes, redraft, show it again, and ask again. Send the body in the format the tool expects.
 4. **Bloco (Copy & Paste)** — Markdown mode only. That heading, then one fenced markdown block in the Output reference shape, with title and body only. No issue type, no labels.
 
 ## Output reference
