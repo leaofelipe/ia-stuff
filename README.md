@@ -9,6 +9,7 @@ Pacote de skills de IA. Tudo fica em `skills/`; o que a skill grava em tempo de 
 - **`handoff`** — Compacta a conversa atual num brief para outra sessão ou outro agente.
 - **`to-story`** — Transforma um dump de discovery, texto de agente, card do Jira ou uma ideia de uma linha numa história curta e legível. Só com invocação explícita.
 - **`explain-pr`** — Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review. Só com invocação explícita.
+- **`humanizer`** — Reescreve texto com cara de IA para soar como quem escreveu, sem mudar o que o texto diz.
 
 ## Layout do `.notebook/`
 
