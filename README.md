@@ -16,6 +16,7 @@ As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda sa
 - **`/spec-lean`** — Spec de feature em quatro passos: um plano revisado por humano, checks com prova, build e um Verifier independente que não é quem construiu, com os artefatos em `.notebook/specs/`.
 - **`/ia-slop-remove`** — Tira do diff da branch o código com cara de IA.
 - **`/simplify-code`** — Revisa o diff em qualidade, performance e reuso, e aplica as simplificações.
+- **`/test-surgery`** — Enxuga os testes do escopo em que é chamada, sem perder caso de uso nem cobertura. A prova é um diff de cobertura linha a linha entre antes e depois, e o resultado sai no chat.
 
 Todas as skills são MIT, exceto `spec-lean`, que mantém a CC-BY-4.0 do original, e `simplify-code`, adaptado de um comando do Cursor sem licença pública conhecida.
 
@@ -79,3 +80,4 @@ budget: 180k
 - **`spec-lean`** — fork da skill da [Tech Leads Club](https://github.com/tech-leads-club/agent-skills), sob CC-BY-4.0.
 - **`ia-slop-remove`** — fork do `deslop`, do plugin [cursor-team-kit](https://github.com/cursor/plugins) da Cursor, sob MIT.
 - **`simplify-code`** — adaptado do comando `/simplify` embutido no Cursor.
+- **`test-surgery`** — inspirado no [PR #2707 do kentcdodds/kody](https://github.com/kentcdodds/kody/pull/2707).
