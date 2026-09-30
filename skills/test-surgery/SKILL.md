@@ -33,7 +33,7 @@ First match wins. Never widen to the whole codebase unless asked.
 
 ## Cuts
 
-- **Tables:** tests that differ only in input and expected output become one `it.each` / `test.each`. Never collapse an existing `.each` into a single test. If a table must live in one test, assert `expect(cases.map(([i]) => [i, fn(i)])).toEqual(cases)`.
+- **Tables:** tests that differ only in input and expected output become one `it.each` / `test.each`. Never collapse an existing `.each` into a single test. If rows are different behaviors, add a label column and put it in the title (`it.each([['npm package', input, expected], …])('%s: %j', …)`). If a table must live in one test, assert `expect(cases.map(([i]) => [i, fn(i)])).toEqual(cases)`.
 - **Merge tests:** only for the same behavior on the same scenario, each checking a different field of one result. If the merged name needs "and" or a comma, keep them apart. Pure functions have no setup, so never merge them for "shared setup".
 - **Builders:** repeated 30+ line literals become per-file `make*` builders with the old values as defaults. Expected values stay literal.
 - **Delete:** tautologies, copy pins, tests of dead code, the same assertion duplicated across layers, reset boilerplate already done by global config, blanket console silencing.
@@ -41,10 +41,10 @@ First match wins. Never widen to the whole codebase unless asked.
 
 ## Workflow
 
-1. **Baseline.** Run the scoped tests with line and branch coverage, writing an Istanbul `coverage-final.json` or a coverage.py JSON with branch data into `<tmp>/before` under `mktemp -d`, never into the repo. Record test files, tests, cases (table rows plus standalone tests), test lines, covered lines and branches. List each pinned behavior (unit, scenario, expected) with its test names.
+1. **Baseline.** Run the scoped tests with line and branch coverage, writing an Istanbul `coverage-final.json` or a coverage.py JSON with branch data into `<tmp>/before` under `mktemp -d`, never into the repo. Record test files; tests (`it`/`test` blocks in the source, each `.each` counting 1); cases (total reported by the runner); test lines (`wc -l` of the scoped test files); covered lines and branches. Print in the chat a table of every pinned behavior, one row per behavior grouped by unit: `Unit | Behavior | Tests`.
 2. **Cut** file by file, rerunning those tests after each.
-3. **Prove.** Rerun with the same command into `<tmp>/after`, then `python3 <skill-dir>/scripts/compare_coverage.py <tmp>/before <tmp>/after`. It prints the totals for the report and every line and branch covered before and not after; exit 1 means losses, exit 2 means a bad report or a changed source file. For other coverage formats, compare per-line and per-branch hits the same way; percentages are not proof. Restore an assertion for each, unless incidental (an unused `??` fallback, code with no production callers). Confirm every behavior maps to a surviving test.
-4. **Report** in the chat, not a file. Write `none` under empty sections.
+3. **Prove.** Rerun with the same command into `<tmp>/after`, then `python3 <skill-dir>/scripts/compare_coverage.py <tmp>/before <tmp>/after`. It prints the totals for the report and every line and branch covered before and not after; exit 1 means losses, exit 2 means a bad report or a changed source file. For other coverage formats, compare per-line and per-branch hits the same way; percentages are not proof. Restore an assertion for each, unless incidental (an unused `??` fallback, code with no production callers). Confirm every behavior in the baseline table maps to a surviving test.
+4. **Report** in the chat, not a file: only the tables below, no prose before or after. Omit a table with no rows. One short phrase per cell.
 
 ```markdown
 # Test surgery: <scope>
@@ -58,25 +58,16 @@ First match wins. Never widen to the whole codebase unless asked.
 | Line coverage | <covered>/<total> (<%>) | | |
 | Branch coverage | <covered>/<total> (<%>) | | |
 
-Diff: +<added> / −<removed> lines, <n> files changed.
+| File | Cut | Lines | Revert if |
+| --- | --- | --- | --- |
 
-## Cuts
-| Technique | Files | Net lines |
+| Behavior | Before | After |
 | --- | --- | --- |
 
-## Judgment calls
-- <cut>: <gain> vs <cost>. Revert if <condition>.
-
-## Behavior map (only behaviors whose test changed)
-| Behavior | Before (test names) | After (test name) |
+| Note | Item | Why |
 | --- | --- | --- |
-
-## Coverage lost and not restored
-- <file:line or branch>: <why incidental>
-
-## Residual risk
-- <merged tests failing as a unit, shared builders, reliance on global mock config, stricter assertions>
-
-## Found outside the scope
-- <production bugs or dead code revealed, left untouched>
 ```
+
+- **Cuts:** one row per cut. Fill `Revert if` only for judgment calls, where the gain is small or the cost is real.
+- **Behaviors:** only behaviors whose test changed (merged, moved, renamed, deleted).
+- **Notes:** `lost` (coverage left unrestored), `risk` (merged tests failing as a unit, shared builders, global mock config, stricter assertions), `outside` (production bugs or dead code found, left untouched).

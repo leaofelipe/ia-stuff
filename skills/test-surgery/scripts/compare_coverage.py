@@ -11,7 +11,8 @@ Accepted inputs, detected from the JSON shape:
 
 BEFORE and AFTER are a JSON file or a directory holding `coverage-final.json` or `coverage.json`.
 Paths are printed relative to --root (default: current directory). Test files and test-support
-helpers are ignored (see DEFAULT_EXCLUDES; add more with --exclude).
+helpers are ignored (see DEFAULT_EXCLUDES; add more with --exclude). Totals skip files with no hits
+in either run, since no test in the scope reaches them.
 
 Statements and branches are matched by id, which is only stable while the source file is unchanged.
 If a file's statement or branch map differs between runs, production code changed and the
@@ -116,9 +117,15 @@ def load(path, root, excludes):
     return files
 
 
-def totals(files):
+def has_hits(fc):
+    return any(n > 0 for n in fc["lines"].values())
+
+
+def totals(files, counted):
     counts = {"lines": [0, 0], "branches": [0, 0]}
-    for fc in files.values():
+    for file, fc in files.items():
+        if file not in counted:
+            continue
         for kind in counts:
             hits = fc[kind].values()
             counts[kind][0] += sum(1 for n in hits if n > 0)
@@ -169,8 +176,12 @@ def main(argv=None):
         print(f"error: {error}", file=sys.stderr)
         return 2
 
-    print(f"before: {format_totals(totals(before))}")
-    print(f"after:  {format_totals(totals(after))}")
+    counted = {file for file, fc in [*before.items(), *after.items()] if has_hits(fc)}
+    untouched = len(set(before) | set(after)) - len(counted)
+    print(f"before: {format_totals(totals(before, counted))}")
+    print(f"after:  {format_totals(totals(after, counted))}")
+    if untouched:
+        print(f"totals skip {untouched} files with no hits in either run")
     if not losses:
         print("lost: none")
         return 0
