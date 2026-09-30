@@ -15,7 +15,7 @@ As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda sa
 | `/to-story` | Transforma um dump de discovery, texto de agente, card do Jira ou uma ideia de uma linha numa história curta e legível. Depende da `humanizer` para funcionar como esperado. |
 | `/explain-pr` | Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review. |
 | `/humanizer` | Reescreve texto com cara de IA para soar como quem escreveu, sem mudar o que o texto diz. |
-| `/spec-lean` | Spec de feature em quatro passos: um plano revisado por humano, checks com prova, build e um Verifier independente que não é quem construiu, com os artefatos em `.notebook/specs/`. |
+| `/spec-lean` | Spec Driven Development (SDD): Plan → Checks → Build → Verify, com os artefatos em `.notebook/specs/`. |
 | `/ia-slop-remove` | Tira do diff da branch o código com cara de IA (comentários, código que não precisava, etc). |
 | `/simplify-code` | Simplifica o código do diff, focando em abstrações desnecessárias, lógica que já existe em outro lugar do projeto e gargalos de performance. |
 | `/test-surgery` | Tira a redundância dos testes, só nos arquivos em que é chamada: testes repetidos viram tabela, setup repetido vira builder e o que não verifica nada sai. Um diff de cobertura linha a linha prova que nenhum comportamento se perdeu, e o resultado sai em tabelas no chat. |
