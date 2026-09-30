@@ -14,6 +14,7 @@ As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda sa
 - **`explain-pr`** — Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review. Só com invocação explícita.
 - **`humanizer`** — Reescreve texto com cara de IA para soar como quem escreveu, sem mudar o que o texto diz.
 - **`spec-lean`** — Spec de feature em quatro passos: um plano revisado por humano, checks com prova, build e um Verifier independente que não é quem construiu. Fork da skill da [Tech Leads Club](https://github.com/tech-leads-club/agent-skills), sob CC-BY-4.0, com os artefatos em `.notebook/specs/`. Só com invocação explícita.
+- **`remove-ia-slop`** — Limpa do diff da branch contra `main` o código com cara de IA: comentários sobrando, `try/catch` e checagens defensivas fora do normal, casts para `any` e aninhamento que caberia em early returns, sem mudar comportamento. Fork do `deslop`, do plugin [cursor-team-kit](https://github.com/cursor/plugins) da Cursor, sob MIT. Só com invocação explícita.
 
 Todas as skills são MIT, exceto `spec-lean`, que mantém a CC-BY-4.0 do original.
 
