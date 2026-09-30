@@ -6,7 +6,7 @@ license: MIT
 disable-model-invocation: true
 ---
 
-Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save to `.notebook/handoff/dd-mm-yy-tema.md`. Ask for the `tema` if it is not obvious; use today's date for `dd-mm-yy`. Create `.notebook/handoff/` if needed. If the file already exists, ask before overwriting. Report the absolute path when done.
+Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save to `.notebook/handoff/dd-mm-yy-theme.md`. Ask for the `theme` if it is not obvious; use today's date for `dd-mm-yy`. Create `.notebook/handoff/` if needed. If the file already exists, ask before overwriting. Report the absolute path when done.
 
 Include a "decisions" section listing every settled decision from the conversation (for example, the outcome of a clarify session) as a short list, not a transcript. Keep it complete even when the next session focuses on something narrower.
 

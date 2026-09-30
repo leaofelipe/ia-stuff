@@ -27,7 +27,7 @@ Todas as skills são MIT, exceto `spec-lean`, que mantém a CC-BY-4.0 do origina
 ```
 .notebook/
 ├── handoff/                     # briefs do handoff
-│   └── dd-mm-yy-tema.md
+│   └── dd-mm-yy-theme.md
 └── specs/                       # artefatos do spec-lean
     ├── STATE.md                 # decisões (AD-NNN) + snapshot de handoff
     ├── LESSONS.md               # gerado por scripts/lessons.py
