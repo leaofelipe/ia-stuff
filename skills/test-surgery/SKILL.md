@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 # Test surgery
 
-Cut redundant test code in the scope without losing any behavior, coverage, or failure diagnostics. Run end to end without asking for approval; stop only if the scope is unresolved or the baseline is red. Cutting little or nothing is a valid outcome.
+Cut redundant test code in the scope without losing any behavior, coverage, or failure diagnostics. Run end to end without asking for approval; stop only if the scope is unresolved or the baseline is red. Work silently: no progress updates or intermediate tables; the final report is the only output. Cutting little or nothing is a valid outcome.
 
 ## Scope
 
@@ -41,9 +41,9 @@ First match wins. Never widen to the whole codebase unless asked.
 
 ## Workflow
 
-1. **Baseline.** Run the scoped tests with line and branch coverage, writing an Istanbul `coverage-final.json` or a coverage.py JSON with branch data into `<tmp>/before` under `mktemp -d`, never into the repo. Record test files; tests (`it`/`test` blocks in the source, each `.each` counting 1); cases (total reported by the runner); test lines (`wc -l` of the scoped test files); covered lines and branches. Print in the chat a table of every pinned behavior, one row per behavior grouped by unit: `Unit | Behavior | Tests`.
+1. **Baseline.** Run the scoped tests with line and branch coverage, writing an Istanbul `coverage-final.json` or a coverage.py JSON with branch data into `<tmp>/before` under `mktemp -d`, never into the repo. Record test files; tests (`it`/`test` blocks in the source, each `.each` counting 1); cases (total reported by the runner); test lines (`wc -l` of the scoped test files); covered lines and branches. Write every pinned behavior to `<tmp>/behaviors.md`, one row per behavior grouped by unit: `Unit | Behavior | Tests`. Do not print it.
 2. **Cut** file by file, rerunning those tests after each.
-3. **Prove.** Rerun with the same command into `<tmp>/after`, then `python3 <skill-dir>/scripts/compare_coverage.py <tmp>/before <tmp>/after`. It prints the totals for the report and every line and branch covered before and not after; exit 1 means losses, exit 2 means a bad report or a changed source file. For other coverage formats, compare per-line and per-branch hits the same way; percentages are not proof. Restore an assertion for each, unless incidental (an unused `??` fallback, code with no production callers). Confirm every behavior in the baseline table maps to a surviving test.
+3. **Prove.** Rerun with the same command into `<tmp>/after`, then `python3 <skill-dir>/scripts/compare_coverage.py <tmp>/before <tmp>/after`. It prints the totals for the report and every line and branch covered before and not after; exit 1 means losses, exit 2 means a bad report or a changed source file. For other coverage formats, compare per-line and per-branch hits the same way; percentages are not proof. Restore an assertion for each, unless incidental (an unused `??` fallback, code with no production callers). Confirm every behavior in `<tmp>/behaviors.md` maps to a surviving test.
 4. **Report** in the chat, not a file: only the tables below, no prose before or after. Omit a table with no rows. One short phrase per cell.
 
 ```markdown

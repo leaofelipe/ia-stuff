@@ -1,6 +1,6 @@
 # ia-stuff
 
-Pacote de skills de IA. Tudo fica em `skills/`.
+Pacote de skills de IA.
 
 As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda saída que precisa ser gravada vai por padrão para a pasta `.notebook/` na raiz do projeto que as consome. Assim um brief do `handoff` fica num lugar previsível, onde outras skills e sessões podem encontrá-lo.
 
@@ -8,15 +8,17 @@ As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda sa
 
 ## Skills
 
-- **`/clarify`** — Entrevista em rodadas (árvore de design + fronteira), até o entendimento compartilhado.
-- **`/handoff`** — Salva o contexto da conversa atual e as decisões tomadas para você retomar o trabalho num novo chat, com a janela de contexto limpa. Pode ser usado em qualquer conversa, não só depois de um clarify.
-- **`/to-story`** — Transforma um dump de discovery, texto de agente, card do Jira ou uma ideia de uma linha numa história curta e legível. Depende da `humanizer` para funcionar como esperado.
-- **`/explain-pr`** — Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review.
-- **`/humanizer`** — Reescreve texto com cara de IA para soar como quem escreveu, sem mudar o que o texto diz.
-- **`/spec-lean`** — Spec de feature em quatro passos: um plano revisado por humano, checks com prova, build e um Verifier independente que não é quem construiu, com os artefatos em `.notebook/specs/`.
-- **`/ia-slop-remove`** — Tira do diff da branch o código com cara de IA.
-- **`/simplify-code`** — Revisa o diff em qualidade, performance e reuso, e aplica as simplificações.
-- **`/test-surgery`** — Tira a redundância dos testes, só nos arquivos em que é chamada: testes repetidos viram tabela, setup repetido vira builder e o que não verifica nada sai. Um diff de cobertura linha a linha prova que nenhum comportamento se perdeu, e o resultado sai em tabelas no chat.
+| Skill | Descrição |
+| --- | --- |
+| `/clarify` | Entrevista em rodadas (árvore de design + fronteira), até o entendimento compartilhado. |
+| `/handoff` | Salva o contexto da conversa atual e as decisões tomadas para você retomar o trabalho num novo chat, com a janela de contexto limpa. Pode ser usado em qualquer conversa, não só depois de um clarify. |
+| `/to-story` | Transforma um dump de discovery, texto de agente, card do Jira ou uma ideia de uma linha numa história curta e legível. Depende da `humanizer` para funcionar como esperado. |
+| `/explain-pr` | Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review. |
+| `/humanizer` | Reescreve texto com cara de IA para soar como quem escreveu, sem mudar o que o texto diz. |
+| `/spec-lean` | Spec de feature em quatro passos: um plano revisado por humano, checks com prova, build e um Verifier independente que não é quem construiu, com os artefatos em `.notebook/specs/`. |
+| `/ia-slop-remove` | Tira do diff da branch o código com cara de IA. |
+| `/simplify-code` | Revisa o diff em qualidade, performance e reuso, e aplica as simplificações. |
+| `/test-surgery` | Tira a redundância dos testes, só nos arquivos em que é chamada: testes repetidos viram tabela, setup repetido vira builder e o que não verifica nada sai. Um diff de cobertura linha a linha prova que nenhum comportamento se perdeu, e o resultado sai em tabelas no chat. |
 
 Todas as skills são MIT, exceto `spec-lean`, que mantém a CC-BY-4.0 do original, e `simplify-code`, adaptado de um comando do Cursor sem licença pública conhecida.
 
