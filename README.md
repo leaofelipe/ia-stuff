@@ -8,15 +8,16 @@ As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda sa
 
 ## Skills
 
-- **`clarify`** — Entrevista sem trégua, em rodadas (árvore de design + fronteira), até o entendimento compartilhado. Só com invocação explícita.
-- **`handoff`** — Salva o contexto da conversa atual e as decisões tomadas para você retomar o trabalho num novo chat, com a janela de contexto limpa. Pode ser usado em qualquer conversa, não só depois de um clarify.
-- **`to-story`** — Transforma um dump de discovery, texto de agente, card do Jira ou uma ideia de uma linha numa história curta e legível. Só com invocação explícita.
-- **`explain-pr`** — Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review. Só com invocação explícita.
-- **`humanizer`** — Reescreve texto com cara de IA para soar como quem escreveu, sem mudar o que o texto diz.
-- **`spec-lean`** — Spec de feature em quatro passos: um plano revisado por humano, checks com prova, build e um Verifier independente que não é quem construiu. Fork da skill da [Tech Leads Club](https://github.com/tech-leads-club/agent-skills), sob CC-BY-4.0, com os artefatos em `.notebook/specs/`. Só com invocação explícita.
-- **`remove-ia-slop`** — Limpa do diff da branch contra `main` o código com cara de IA: comentários sobrando, `try/catch` e checagens defensivas fora do normal, casts para `any` e aninhamento que caberia em early returns, sem mudar comportamento. Fork do `deslop`, do plugin [cursor-team-kit](https://github.com/cursor/plugins) da Cursor, sob MIT. Só com invocação explícita.
+- **`/clarify`** — Entrevista em rodadas (árvore de design + fronteira), até o entendimento compartilhado.
+- **`/handoff`** — Salva o contexto da conversa atual e as decisões tomadas para você retomar o trabalho num novo chat, com a janela de contexto limpa. Pode ser usado em qualquer conversa, não só depois de um clarify.
+- **`/to-story`** — Transforma um dump de discovery, texto de agente, card do Jira ou uma ideia de uma linha numa história curta e legível. Depende da `humanizer` para funcionar como esperado.
+- **`/explain-pr`** — Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review.
+- **`/humanizer`** — Reescreve texto com cara de IA para soar como quem escreveu, sem mudar o que o texto diz.
+- **`/spec-lean`** — Spec de feature em quatro passos: um plano revisado por humano, checks com prova, build e um Verifier independente que não é quem construiu, com os artefatos em `.notebook/specs/`.
+- **`/ia-slop-remove`** — Tira do diff da branch o código com cara de IA.
+- **`/simplify-code`** — Revisa o diff em qualidade, performance e reuso, e aplica as simplificações.
 
-Todas as skills são MIT, exceto `spec-lean`, que mantém a CC-BY-4.0 do original.
+Todas as skills são MIT, exceto `spec-lean`, que mantém a CC-BY-4.0 do original, e `simplify-code`, adaptado de um comando do Cursor sem licença pública conhecida.
 
 ## Layout do `.notebook/`
 
@@ -48,6 +49,8 @@ flowchart TD
     handoff -.->|brief como referência| story
     story --> jira[card]
     jira --> spec
+    spec --> slop[ia-slop-remove]
+    slop --> simplify[simplify-code]
 ```
 
 1. **`clarify`** quando a ideia ainda precisa de um entendimento compartilhado.
@@ -55,6 +58,7 @@ flowchart TD
 3. **`handoff`** em qualquer conversa atual — uma sessão de clarify ou qualquer outro chat — para abrir um novo chat com o mesmo contexto e as decisões registradas.
 4. **`to-story`** para transformar a ideia, um brief do handoff ou um dump de discovery num card.
 5. **`spec-lean`** para planejar e implementar uma feature de ponta a ponta.
+6. Depois do spec-lean, **`ia-slop-remove`** para tirar do diff o que tem cara de IA e, em seguida, **`simplify-code`** para a revisão de qualidade, performance e reuso.
 
 ## Configurar o `spec-lean`
 
@@ -69,3 +73,9 @@ budget: 180k
 
 - **`profile`** — quanto o Verifier checa: `light`, `standard` (default) ou `ui`. O `light` roda as provas e cobra uma assertion localizada por check. O `standard` também recalcula o `Coverage`, dá veredito nas linhas de `Test policy` e injeta falhas para ver se os testes pegam. O `ui` também compara as telas com o design.
 - **`budget`** — estimativa de tokens que um builder aguenta antes de a skill parar e perguntar se passa o trabalho para outro builder ou segue num só. Default: `180k`.
+
+## Referências
+
+- **`spec-lean`** — fork da skill da [Tech Leads Club](https://github.com/tech-leads-club/agent-skills), sob CC-BY-4.0.
+- **`ia-slop-remove`** — fork do `deslop`, do plugin [cursor-team-kit](https://github.com/cursor/plugins) da Cursor, sob MIT.
+- **`simplify-code`** — adaptado do comando `/simplify` embutido no Cursor.

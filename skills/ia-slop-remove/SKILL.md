@@ -1,6 +1,6 @@
 ---
-name: remove-ia-slop
-description: Remove AI-generated code slop and clean up code style. Use when the user says remove-ia-slop, /remove-ia-slop, or asks to clean AI slop from the branch diff.
+name: ia-slop-remove
+description: Remove AI-generated code slop and clean up code style. Use when the user says ia-slop-remove, /ia-slop-remove, or asks to clean AI slop from the branch diff.
 license: MIT
 disable-model-invocation: true
 metadata:
