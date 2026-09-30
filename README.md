@@ -50,7 +50,7 @@ flowchart TD
     handoff --> novo["novo chat com o brief<br/>.notebook/handoff/"]
     novo -.-> spec
     handoff -.->|brief como referência| story
-    story --> jira[card]
+    story --> jira["Card no Jira/Linear"]
     jira --> spec
     spec --> slop[ia-slop-remove]
     slop --> simplify[simplify-code]
@@ -59,7 +59,7 @@ flowchart TD
 1. **`clarify`** quando a ideia ainda precisa de um entendimento compartilhado.
 2. Ao fim do clarify, implemente direto no mesmo chat, use o **`spec-lean`** quando a feature merece plano e prova, ou use o **`handoff`** para continuar em outro chat.
 3. **`handoff`** em qualquer conversa atual — uma sessão de clarify ou qualquer outro chat — para abrir um novo chat com o mesmo contexto e as decisões registradas.
-4. **`to-story`** para transformar a ideia, um brief do handoff ou um dump de discovery num card.
+4. **`to-story`** para transformar a ideia, um brief do handoff ou um dump de discovery num card no Jira/Linear.
 5. **`spec-lean`** para planejar e implementar uma feature de ponta a ponta.
 6. Depois do spec-lean, **`ia-slop-remove`** para tirar do diff o que tem cara de IA e, em seguida, **`simplify-code`** para a revisão de qualidade, performance e reuso.
 
