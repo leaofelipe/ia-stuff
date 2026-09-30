@@ -10,6 +10,7 @@ AI skills pack. Everything lives under `skills/`; runtime outputs go to `.notebo
 | `save-discussion` | After a clarify, persist settled decisions for **this discussion**. | `.notebook/discussions/dd-mm-yy-tema.md` |
 | `handoff` | Compact the current conversation into a brief for another session/agent. | `.notebook/handoff/dd-mm-yy-tema.md` |
 | `to-story` | Turn a discovery dump, agent text, Jira card, or one-line idea into a short human-readable story. Explicit invocation only. | Jira card, only after explicit approval |
+| `explain-pr` | Didactic walkthrough of a PR/MR, one item at a time (base → concepts → connections). Not a review. Explicit invocation only. | nothing |
 
 ## `.notebook/` layout
 
