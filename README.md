@@ -1,51 +1,49 @@
 # ia-stuff
 
-AI skills pack. Everything lives under `skills/`; runtime outputs go to `.notebook/` in the consuming project.
+Pacote de skills de IA. Tudo fica em `skills/`; o que a skill grava em tempo de execução vai para `.notebook/` no projeto que a consome.
 
 ## Skills
 
-| Skill | What it does | Writes |
-| --- | --- | --- |
-| `clarify` | Relentless interview in rounds (design tree + frontier) until shared understanding. Explicit invocation only. | nothing |
-| `save-discussion` | After a clarify, persist settled decisions for **this discussion**. | `.notebook/discussions/dd-mm-yy-tema.md` |
-| `handoff` | Compact the current conversation into a brief for another session/agent. | `.notebook/handoff/dd-mm-yy-tema.md` |
-| `to-story` | Turn a discovery dump, agent text, Jira card, or one-line idea into a short human-readable story. Explicit invocation only. | Jira card, only after explicit approval |
-| `explain-pr` | Didactic walkthrough of a PR/MR, one item at a time (base → concepts → connections). Not a review. Explicit invocation only. | nothing |
+- **`clarify`** — Entrevista sem trégua, em rodadas (árvore de design + fronteira), até o entendimento compartilhado. Só com invocação explícita.
+- **`save-discussion`** — Depois de um clarify, persiste as decisões fechadas **desta discussão**.
+- **`handoff`** — Compacta a conversa atual num brief para outra sessão ou outro agente.
+- **`to-story`** — Transforma um dump de discovery, texto de agente, card do Jira ou uma ideia de uma linha numa história curta e legível. Só com invocação explícita.
+- **`explain-pr`** — Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review. Só com invocação explícita.
 
-## `.notebook/` layout
+## Layout do `.notebook/`
 
 ```
 .notebook/
-├── discussions/                 # save-discussion outcomes
+├── discussions/                 # resultados do save-discussion
 │   └── dd-mm-yy-tema.md
-└── handoff/                     # handoff briefs
+└── handoff/                     # briefs do handoff
     └── dd-mm-yy-tema.md
 ```
 
-## Overall flow
+## Fluxo geral
 
 ```mermaid
 flowchart TD
     ideia[ideia / problema] --> clarify[clarify]
     clarify --> docs[save-discussion]
     docs --> disc[".notebook/discussions/dd-mm-yy-tema.md"]
-    clarify -.->|trocar de chat| ho["handoff -> .notebook/handoff/"]
+    conversa[conversa atual] -.->|novo chat + mesmo contexto| ho["handoff -> .notebook/handoff/"]
     ideia -->|card para o Jira| story[to-story]
-    disc -.->|referencia manual| story
+    disc -.->|referência manual| story
 ```
 
-1. **`clarify`** when the idea still needs a clear shared understanding.
-2. **`save-discussion`** when the frontier is empty — writes the discussion note.
-3. **`handoff`** to carry the conversation into another chat or agent.
-4. **`to-story`** to turn the idea, a discussion note, or a discovery dump into a Jira card.
+1. **`clarify`** quando a ideia ainda precisa de um entendimento compartilhado.
+2. **`save-discussion`** quando a fronteira está vazia — grava a nota da discussão.
+3. **`handoff`** em qualquer conversa atual — uma sessão de clarify ou qualquer outro chat — para abrir um novo chat com o mesmo contexto.
+4. **`to-story`** para transformar a ideia, uma nota de discussão ou um dump de discovery num card do Jira.
 
-## `to-story` modes
+## Modos do `to-story`
 
-On invocation, `to-story` checks for a Jira tool in this order and uses the first one installed and authenticated: `twg`, `acli`, then an Atlassian MCP.
+Na invocação, o `to-story` procura uma ferramenta de Jira nesta ordem e usa a primeira instalada e autenticada: `twg`, `acli`, depois um MCP da Atlassian.
 
-| Mode | When | Delivery |
+| Modo | Quando | Entrega |
 | --- | --- | --- |
-| **Jira** | A tool was found | Shows the card, then always asks for approval before writing it |
-| **Markdown** | Nothing was found | Shows the card plus a Copy & Paste block |
+| **Jira** | Uma ferramenta foi encontrada | Mostra o card e sempre pede aprovação antes de gravar |
+| **Markdown** | Nenhuma foi encontrada | Mostra o card e um bloco para copiar e colar |
 
-Its prose relies on the `humanizer` skill when available, with a built-in checklist as fallback.
+A prosa usa a skill `humanizer` quando ela está disponível, com um checklist embutido como fallback.
