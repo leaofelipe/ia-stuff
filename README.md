@@ -11,6 +11,7 @@ As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda sa
 | Skill | Descrição |
 | --- | --- |
 | `/clarify` | Entrevista em rodadas (árvore de design + fronteira), até o entendimento compartilhado. |
+| `/do-you-understand` | Pede ao agente para reformular com as próprias palavras quais são seus objetivos e o problema que você está tentando resolver, para conferir se ele entendeu antes de agir. |
 | `/handoff` | Salva o contexto da conversa atual e as decisões tomadas para você retomar o trabalho num novo chat, com a janela de contexto limpa. Pode ser usado em qualquer conversa, não só depois de um clarify. |
 | `/to-story` | Transforma um dump de discovery, texto de agente, card do Jira ou uma ideia de uma linha numa história curta e legível. Depende da `humanizer` para funcionar como esperado. |
 | `/explain-pr` | Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review. |
