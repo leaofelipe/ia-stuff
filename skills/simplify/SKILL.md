@@ -1,6 +1,6 @@
 ---
-name: simplify-code
-description: Simplify the scoped code by using parallel read-only review agents for code quality, performance, and reuse, then make targeted cleanup fixes. Use when the user says simplify-code, /simplify-code, or asks to simplify or clean up the current changes.
+name: simplify
+description: Simplify the scoped code by using parallel read-only review agents for code quality, performance, and reuse, then make targeted cleanup fixes. Use when the user says simplify, /simplify, or asks to simplify or clean up the current changes.
 argument-hint: "[paths, symbols, diff, or area]"
 disable-model-invocation: true
 metadata:
@@ -11,7 +11,7 @@ Simplify the scoped code by using parallel read-only review agents, then make ta
 
 ## Scope Selection
 
-1. If the user provided an explicit scope after `/simplify-code` (paths, symbols, a diff, or a natural-language area), use that scope.
+1. If the user provided an explicit scope after `/simplify` (paths, symbols, a diff, or a natural-language area), use that scope.
 2. Otherwise, inspect local changes with both unstaged and staged diffs so staged work is not missed:
 ```bash
 git diff --no-color
