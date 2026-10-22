@@ -15,6 +15,7 @@ As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda sa
 | `/handoff` | Salva o contexto da conversa atual e as decisões tomadas para você retomar o trabalho num novo chat, com a janela de contexto limpa. Pode ser usado em qualquer conversa, não só depois de um clarify. |
 | `/to-story` | Transforma um dump de discovery, texto de agente, card do Jira ou uma ideia de uma linha numa história curta e legível. Depende da `humanizer` para funcionar como esperado. |
 | `/explain-pr` | Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review. |
+| `/explain-plan` | Dá um overview didático de um plano ou spec que você passa (caminho ou link), em tópicos com o que está decidido e o que vale revisar, mais os achados novos conferidos no código. É só informativa: não implementa nem edita o plano. |
 | `/humanizer` | Reescreve texto com cara de IA para soar como quem escreveu, sem mudar o que o texto diz. |
 | `/spec-lean` | Spec Driven Development (SDD): Plan → Checks → Build → Verify, com os artefatos em `.notebook/specs/`. |
 | `/deslop` | Tira do diff da branch o código com cara de IA (comentários, código que não precisava, etc). |
@@ -53,6 +54,8 @@ flowchart TD
     handoff -.->|brief como referência| story
     story --> jira["Card no Jira/Linear"]
     jira --> spec
+    spec -.->|plan.md| explain[explain-plan]
+    explain -.->|decisões revisadas| spec
     spec --> slop[deslop]
     slop --> simplify
 ```
@@ -62,7 +65,8 @@ flowchart TD
 3. **`handoff`** em qualquer conversa atual — uma sessão de clarify ou qualquer outro chat — para abrir um novo chat com o mesmo contexto e as decisões registradas.
 4. **`to-story`** para transformar a ideia, um brief do handoff ou um dump de discovery num card no Jira/Linear.
 5. **`spec-lean`** para planejar e implementar uma feature de ponta a ponta.
-6. Depois do spec-lean, **`deslop`** para tirar do diff o que tem cara de IA e, em seguida, **`simplify`** para a revisão de qualidade, performance e reuso.
+6. **`explain-plan`** para entender e revisar o plano antes de construir: passe o caminho do `plan.md` (ou de outra spec) e revise tópico por tópico. Ela não muda nada; as decisões revisadas voltam para o `spec-lean`.
+7. Depois do spec-lean, **`deslop`** para tirar do diff o que tem cara de IA e, em seguida, **`simplify`** para a revisão de qualidade, performance e reuso.
 
 ## Configurar o `spec-lean`
 
