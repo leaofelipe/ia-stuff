@@ -13,5 +13,5 @@ Quando um ponto depende de uma decisão sua, ela pergunta em texto, uma pergunta
 É só informativa: não implementa, não edita o plano e não inicia nenhuma etapa.
 
 ```
-/explain-plan .notebook/specs/features/minha-feature/plan.md
+/explain-plan {your plan.md / link/ etc }
 ```
