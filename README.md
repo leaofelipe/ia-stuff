@@ -20,6 +20,7 @@ As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda sa
 | `/spec-lean` | Spec Driven Development (SDD): Plan → Checks → Build → Verify, com os artefatos em `.notebook/specs/`. |
 | `/deslop` | Tira do diff da branch o código com cara de IA (comentários, código que não precisava, etc). |
 | `/simplify` | Simplifica o código do diff, focando em abstrações desnecessárias, lógica que já existe em outro lugar do projeto e gargalos de performance. |
+| `/readable-code` | Melhora a legibilidade do código que mudou na branch, sem alterar comportamento: aninhamento, nomes, números mágicos, duplicação e comentários que explicam o "o quê". Entrega o plano e só aplica quando você pede. |
 | `/test-surgery` | Tira a redundância dos testes, só nos arquivos em que é chamada: testes repetidos viram tabela, setup repetido vira builder e o que não verifica nada sai. Um diff de cobertura linha a linha prova que nenhum comportamento se perdeu, e o resultado sai em tabelas no chat. |
 
 Todas as skills são MIT, exceto `spec-lean`, que mantém a CC-BY-4.0 do original, e `simplify`, adaptado de um comando do Cursor sem licença pública conhecida.
@@ -58,6 +59,7 @@ flowchart TD
     explain -.->|decisões revisadas| spec
     spec --> slop[deslop]
     slop --> simplify
+    simplify --> readable[readable-code]
 ```
 
 1. **`clarify`** quando a ideia ainda precisa de um entendimento compartilhado.
@@ -67,6 +69,7 @@ flowchart TD
 5. **`spec-lean`** para planejar e implementar uma feature de ponta a ponta.
 6. **`explain-plan`** para entender e revisar o plano antes de construir: passe o caminho do `plan.md` (ou de outra spec) e revise tópico por tópico. Ela não muda nada; as decisões revisadas voltam para o `spec-lean`.
 7. Depois do spec-lean, **`deslop`** para tirar do diff o que tem cara de IA e, em seguida, **`simplify`** para a revisão de qualidade, performance e reuso.
+8. **`readable-code`** para deixar esse diff legível sem mudar o comportamento. Ela entrega o plano e só aplica quando você pede.
 
 ## Configurar o `spec-lean`
 
