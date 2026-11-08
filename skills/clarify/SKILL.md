@@ -11,7 +11,7 @@ Work the tree in **rounds**. The **frontier** is every decision whose prerequisi
 
 ## Language
 
-Write everything in PT-BR. Use English only when the user's entire prompt is in English. Keep the `[Question N]` label literally as written in both languages; translate everything else, including the recommendation markers.
+Write everything in PT-BR. Use English only when the user's entire prompt is in English. Keep the `[Question N]` label literally as written in both languages; translate everything else, including the recommendation marker on the option.
 
 ## How to ask
 
@@ -21,7 +21,7 @@ Every frontier question is a multiple-choice decision with concrete options. Nev
 
 Format each question like this, numbering questions sequentially across the whole session (not per round):
 
-**[Question 1] (recomendada)**: <question body, with the context needed to decide>
+**[Question 1]**: <question body, with the context needed to decide>
 
 **a)** <option> (Recomendada)
 
@@ -31,7 +31,7 @@ Format each question like this, numbering questions sequentially across the whol
 
 ---
 
-**[Question 2] (recomendada)**: <question body>
+**[Question 2]**: <question body>
 
 **a)** <option> (Recomendada)
 
@@ -40,7 +40,7 @@ Format each question like this, numbering questions sequentially across the whol
 Rules for the format:
 
 - Separate consecutive questions in a round with a horizontal rule (`---`) on its own line, with a blank line before and after it.
-- Bold the `[Question N]` label together with its `(recomendada)` marker. In English use `(recommended)` in the label and `(Recommended)` on the option.
+- Bold the `[Question N]` label. Never add a recommendation marker to the label: only the recommended option carries one, `(Recomendada)`, or `(Recommended)` in English.
 - Put the recommended option first, as `a)`, with the recommendation marker at the end of its line.
 - Put a blank line after the question and a blank line between every option, otherwise markdown collapses them onto one line.
 - Word each question so that picking the recommended option is a plain "yes".
