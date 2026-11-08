@@ -1,41 +1,28 @@
 # Dunning on failed charge - verification
 
-**Verdict**: PASS
-**Profile**: standard
-**Diff range**: a1b2c3d..e4f5g6h
-**Round**: 1 - full
+**Verdict**: FAIL
+**Proofs**: `proofs.md` at e4f5a6b
 **Verifier**: independent sub-agent (author != verifier)
 
 ## Checks
 
-| Check | Claim | Proof run | Evidence | Result |
-| --- | --- | --- | --- | --- |
-| C1 | suspends, never cancels | `bin/rails test ... -n "/failed_charge_suspends/"` exit 0 | `test/billing/dunning_test.rb:118` - `assert_equal "suspended", sub.status` | PASS |
-| C8 | retry changes nothing | `bin/rails test ... -n "/retry_is_idempotent/"` exit 0 | `test/webhooks/ingest_test.rb:64` - `assert_equal 1, WebhookDelivery.count` | PASS |
-
-## Coverage
-
-| Set (size) | Recomputed from | Member -> proof | Unproven |
-| --- | --- | --- | --- |
-| provider status -> local (9) | provider webhook reference | C2, table-driven over all 9 | - |
-| webhook event types (5) | provider webhook reference | `charge_failed` C1 · `charge_succeeded` C6 · `updated` C10 · `deleted` C10 · `trial_will_end` C10 | - |
-
-## Test policy rows
-
-| Row | Files it classifies | Required proof | Expectation met |
-| --- | --- | --- | --- |
-| Decides, reached across a boundary | `app/webhooks/ingest.rb` | boundary C9 · own layer C10 | yes |
-| Decides, not reached across a boundary | `app/models/billing/status_map.rb` | own layer C2 | yes |
-| Instrumentation, pass-throughs | `app/webhooks/payload.rb` | none of its own | yes |
-
-## Faults injected
-
-| Mutation | Location | Killed |
+| Check | Test | Holds |
 | --- | --- | --- |
-| returned status `suspended` -> `cancelled` | `app/models/billing/subscription.rb:88` | yes |
-| removed the delivery-id guard | `app/webhooks/ingest.rb:31` | yes |
-| bound `>= 3` -> `> 3` on retry count | `app/models/billing/dunning.rb:22` | yes |
+| C1 | `test/billing/dunning_test.rb` `test_failed_charge_suspends` | yes |
+| C2 | `test/billing/status_map_test.rb` `test_every_provider_status_maps_once` | yes |
+| C3 | `test/billing/status_map_test.rb` `test_unknown_status_is_recorded` | yes |
+| C4 | `test/billing/access_test.rb` `test_suspended_denies_paid_groups` | no - asserts the status changed, not the value |
+| C5 | `test/billing/transitions_test.rb` `test_suspended_to_trialing_is_rejected` | yes |
+| C6 | `test/billing/transitions_test.rb` `test_suspended_to_active` | yes |
+| C7 | `test/webhooks/ingest_test.rb` `test_concurrent_delivery_conflicts` | yes |
+| C8 | `test/webhooks/ingest_test.rb` `test_retry_is_idempotent` | yes |
+| C9 | `test/webhooks/ingest_test.rb` `test_missing_subscription_id_is_422` | yes |
+| C10 | `test/webhooks/dispatch_test.rb` `test_dispatches_every_event_type` | yes |
+| C11 | `test/billing/dunning_test.rb` `test_provider_timeout_is_inert` | yes |
+| C12 | `test/webhooks/ingest_test.rb` `test_unsigned_delivery_is_401` | yes |
 
-## Gate
+## Findings
 
-`bin/rails test` - 138 passed, 0 failed
+| Finding | Evidence | Fix | Closed |
+| --- | --- | --- | --- |
+| C4 asserts the status changed, not the value | `test/billing/access_test.rb:40` | assert `suspended` | e4f5a6b C4 |

@@ -12,16 +12,19 @@ the check that proves it - and this script makes the join checkable: a row decla
 set of 5 with 4 members assigned fails, loudly, before a line of code is written.
 
 Pure standard library, zero dependencies. Operates only on the checks.md markdown
-artifact - never on the target codebase - so it stays stack-agnostic.
+artifact, so it stays stack-agnostic - except with --execute, which runs the `Build:` line once,
+as check_proofs.py runs it, before any code is written.
 
 The requirements and the solution's shape are not this file's business: both were
 reviewed in plan.md and are gated by validate_plan.py. What this script owns is the
 derivation from them, which is where omissions surface.
 
 What it checks:
-  ERROR  - no `Profile:` line, or an unknown profile
+  ERROR  - no `Build:` line naming the repo's build, type check and lint commands (or `none - <why>`)
+  ERROR  - a sibling plan.md with no `**Approved**: <date> - user: "<their words>"` line
   ERROR  - a required section is missing (Checks, Coverage, Swept)
   ERROR  - a check with no `Proof:` line
+  ERROR  - a `run <name>` proof with no `Run <name>:` line, or with no expected line after `|`
   ERROR  - a duplicate check id
   ERROR  - no checks parsed at all
   ERROR  - a Coverage row with an empty member cell
@@ -30,22 +33,26 @@ What it checks:
   ERROR  - a swept dimension missing, or its landing left blank
   ERROR  - an `n/a` swept landing with no reason after it
   ERROR  - a check id referenced in Coverage or Swept that is not defined
+  ERROR  - a plan criterion cites a binding capture and no check proving it cites that capture
   WARN   - a route in plan.md's Surface that nothing here mentions
-  WARN   - a proof that names no test selector (a whole suite settles no single claim)
+  WARN   - a proof that names no test selector (a whole suite settles no single claim; `browser`,
+           `walk` and `run` proofs are exempt - a run proof's expected line is its selector)
+  WARN   - a `Run` line no proof reads
   WARN   - a claim carrying a vague word instead of a concrete value
   WARN   - a Coverage row that declares no set size
   WARN   - a swept landing that is neither a check, `existing`, `n/a`, nor `Unresolved`
   WARN   - a blocking unresolved question still open
-  WARN   - a `Test policy` section is absent under profile standard/ui
+  ERROR  - with --execute, when nothing else failed: a `Build:` command is red before building
 
 Usage:
-  python3 <skill-dir>/scripts/validate_checks.py [target] [--root DIR] [--strict]
+  python3 <skill-dir>/scripts/validate_checks.py [target] [--root DIR] [--strict] [--execute]
 
   Invoke from the skill directory that ships this script (not the project root).
   target    Path to a checks.md, a feature directory, a feature name, or a project root.
-            Omitted -> auto-detect the single feature under <root>/.notebook/specs/features/.
-  --root    Project root that contains .notebook/specs/ (default: current dir).
+            Omitted -> auto-detect the single feature under <root>/.specs/features/.
+  --root    Project root that contains .specs/ (default: current dir).
   --strict  Treat warnings as errors.
+  --execute Before starting to build: also run the `Build:` line once.
 
 Exit codes: 0 pass, 1 errors found (or warnings under --strict), 2 usage error.
 """
@@ -55,12 +62,16 @@ import os
 import re
 import sys
 
-PROFILES = ("light", "standard", "ui")
+from lean_config import RUN_PROOF_RE, plan_approved, plan_marks_binding, read_runs
+
 REQUIRED_SECTIONS = ["Checks", "Coverage", "Swept"]
 
-PROFILE_RE = re.compile(r"^\**Profile\**\s*:\s*`?(\w+)`?", re.IGNORECASE)
 CHECK_RE = re.compile(r"^\**\s*(C\d+)\s*\**\s*[-–—:]\s*(.+)$")
 PROOF_RE = re.compile(r"^\**\s*Proof\s*\**\s*:\s*(.+)$", re.IGNORECASE)
+# A state a capture draws is proven by the screenshot the author saved, and a visit by the author's
+# walk - neither by a test selector.
+SCREEN_PROOF_RE = re.compile(r"^`?(?:browser|walk)\b")
+CAPTURE_RE = re.compile(r"`([^`\s]+\.(?:png|jpe?g|webp|gif))`", re.IGNORECASE)
 CID_RE = re.compile(r"\bC\d+\b")
 PLACEHOLDER_RE = re.compile(r"^\s*[\[<].+[\]>]\s*$")
 SIZE_RE = re.compile(r"\((\d+)\s*(?:[a-z\- ]+)?\)")
@@ -105,7 +116,7 @@ def resolve_checks(target, root):
             if os.path.isfile(cand):
                 return cand
             return _autodetect(target)
-        cand = os.path.join(root, ".notebook", "specs", "features", target, "checks.md")
+        cand = os.path.join(root, ".specs", "features", target, "checks.md")
         if os.path.isfile(cand):
             return cand
         return None
@@ -113,7 +124,7 @@ def resolve_checks(target, root):
 
 
 def _autodetect(root):
-    base = os.path.join(root, ".notebook", "specs", "features")
+    base = os.path.join(root, ".specs", "features")
     if not os.path.isdir(base):
         return None
     features = [
@@ -216,16 +227,19 @@ def count_members(cell):
     return sum(1 for p in parts if CID_RE.search(p))
 
 
-def plan_routes(checks_path):
-    """Route paths named in the sibling plan.md's Surface table, if there is one."""
+def _plan_lines(checks_path):
     plan = os.path.join(os.path.dirname(os.path.abspath(checks_path)), "plan.md")
     if not os.path.isfile(plan):
         return []
     with open(plan, "r", encoding="utf-8") as f:
-        lines = strip_fences(f.read().splitlines())
-    bounds = section_bounds(lines, "Surface")
+        return strip_fences(f.read().splitlines())
+
+
+def plan_routes(checks_path):
+    """Route paths named in the sibling plan.md's Surface table, if there is one."""
+    lines = _plan_lines(checks_path)
     routes = []
-    for r in table_rows(lines, bounds):
+    for r in table_rows(lines, section_bounds(lines, "Surface")):
         cells = split_row(r)
         if not cells or PLACEHOLDER_RE.match(cells[0]):
             continue
@@ -235,47 +249,75 @@ def plan_routes(checks_path):
     return routes
 
 
+def plan_screen_captures(checks_path):
+    """{criterion number: [capture stems it cites]} for a plan whose Sources marks a source binding.
+
+    A stem is a cited image path without directory and extensions, so an image and its
+    structural capture count as one.
+    """
+    lines = _plan_lines(checks_path)
+    if not plan_marks_binding(lines):
+        return {}
+    out = {}
+    crit = section_bounds(lines, "Criteria")
+    if not crit:
+        return {}
+    for i in range(*crit):
+        m = re.match(r"^\s*(\d+)\.\s+(.*)$", lines[i])
+        if not m:
+            continue
+        cited = sorted({os.path.basename(p).split(".")[0] for p in CAPTURE_RE.findall(m.group(2))
+                        if "://" not in p and not p.endswith(".running.png")})
+        if cited:
+            out[int(m.group(1))] = cited
+    return out
+
+
 def check_file(path):
     with open(path, "r", encoding="utf-8") as f:
         raw = f.read().splitlines()
     lines = strip_fences(raw)
     errors, warnings = [], []
 
-    # Profile.
-    profile = None
-    for ln in lines:
-        m = PROFILE_RE.match(ln.strip())
-        if m:
-            profile = m.group(1).lower()
-            break
-    if profile is None:
-        errors.append("no `Profile:` line - the verification report has to name the profile in force")
-    elif profile not in PROFILES:
-        errors.append(f"unknown profile '{profile}' (expected one of: {', '.join(PROFILES)})")
+    if not any(re.match(r"^\**\s*Build\s*\**\s*:\s*\S", ln.strip(), re.IGNORECASE) for ln in lines):
+        errors.append("no `Build:` line - name the repo's build, type check and lint commands (or `Build: none - <why>`); "
+                      "a green test suite does not show the code compiles")
+    plan = _plan_lines(path)
+    if plan and not plan_approved(plan):
+        errors.append("plan.md has no `**Approved**: <YYYY-MM-DD> - user: \"<their words>\"` line - checks are "
+                      "written from an approved plan; present it and stop, never write the approval yourself")
 
     # Sections.
     for name in REQUIRED_SECTIONS:
         if section_bounds(lines, name) is None:
             errors.append(f"missing required section: ## {name}")
-    if profile in ("standard", "ui") and section_bounds(lines, "Test policy") is None:
-        warnings.append(
-            f"profile is {profile} but there is no ## Test policy section - confirm the repo already "
-            "answers which level proves each layer and how deeply"
-        )
-
     # Checks.
     checks, duplicates = parse_checks(lines)
     for cid, line_no in duplicates:
         errors.append(f"L{line_no}: duplicate check id {cid} - ids are referenced downstream and must be unique")
     if not checks:
         errors.append("no checks parsed - expected lines shaped `**C1** - <claim>` followed by `Proof: <command>`")
-        return errors, warnings, profile
+        return errors, warnings
 
+    runs, read = read_runs(lines), set()
     for cid, c in sorted(checks.items(), key=lambda kv: int(kv[0][1:])):
         if not c["proofs"]:
             errors.append(f"{cid} has no `Proof:` line - no proof, no check (L{c['line']})")
         for pr in c["proofs"]:
             low = pr.lower()
+            if SCREEN_PROOF_RE.match(low):
+                continue
+            text = pr.strip("`").strip()
+            rm = RUN_PROOF_RE.match(text) or re.match(r"^run\s+([\w-]+)\s*$", text, re.IGNORECASE)
+            if rm and (rm.re is RUN_PROOF_RE or rm.group(1) in runs):
+                read.add(rm.group(1))
+                if rm.group(1) not in runs:
+                    errors.append(f"{cid}: proof reads `run {rm.group(1)}` and no `Run {rm.group(1)}: <command>` "
+                                  f"line defines it (L{c['line']})")
+                if rm.re is not RUN_PROOF_RE or not rm.group(2).strip("`").strip():
+                    errors.append(f"{cid}: `run {rm.group(1)}` names no line after `|` - write the line the run "
+                                  f"prints when this test passes, pass marker included (L{c['line']})")
+                continue
             if not any(tok in low for tok in SELECTOR_TOKENS):
                 warnings.append(
                     f"{cid}: proof names no test selector, so it may be a whole suite - "
@@ -284,6 +326,9 @@ def check_file(path):
         vague = VAGUE_RE.search(c["claim"])
         if vague:
             warnings.append(f"{cid}: claim uses '{vague.group(0)}' instead of a concrete value")
+    for name in runs:
+        if name not in read:
+            warnings.append(f"`Run {name}` is read by no proof - point a check at it or drop it")
 
     referenced = set()
 
@@ -377,12 +422,43 @@ def check_file(path):
                 f"owe a Coverage row, or the route is dead"
             )
 
+    # A screen criterion points at a capture; its check has to keep pointing there. A check that
+    # lists the screen's labels instead brings the transcription back one step later.
+    for ac, stems in sorted(plan_screen_captures(path).items()):
+        mine = {cid: c for cid, c in checks.items()
+                if str(ac) in re.findall(r"\bAC\s*(\d+)", c["claim"])}
+        claims = " ".join(c["claim"] for c in mine.values())
+        for stem in stems:
+            if stem not in claims:
+                errors.append(
+                    f"AC {ac} cites the capture `{stem}` but no check proving AC {ac} does - the check "
+                    f"holds the screen to the capture, not to a list of its labels"
+                )
+
     # Blocking questions.
     for i, ln in enumerate(lines, start=1):
         if ln.strip().startswith("|") and re.search(r"\|\s*blocks\s*\|", ln, re.IGNORECASE):
             warnings.append(f"L{i}: an unresolved question is marked `blocks` - it cannot be settled while building")
 
-    return errors, warnings, profile
+    return errors, warnings
+
+
+def red_build(path, root):
+    """Each `Build:` command that fails on this tree, run once as check_proofs.py runs it."""
+    from check_proofs import read_checks, run, shell_of
+    _, _, build, _ = read_checks(path)
+    bash, _ = shell_of()
+    errors = []
+    for cmd in build:
+        code, output = run(root, cmd, bash)
+        if code:
+            lines = output.strip().splitlines()
+            first = next((ln for ln in lines if "error" in ln.lower()), lines[-1] if lines else "")
+            errors.append(
+                f"Build is red before building: `{cmd}` exit {code} - {first.strip()[:100]}. check_proofs.py "
+                f"and the gate hold the feature to this line, so name the repo's own build, type check and lint "
+                f"commands; if those are red before any change, tell the user and stop")
+    return errors
 
 
 def main(argv=None):
@@ -393,6 +469,7 @@ def main(argv=None):
     p.add_argument("target", nargs="?", default=None)
     p.add_argument("--root", default=".")
     p.add_argument("--strict", action="store_true")
+    p.add_argument("--execute", action="store_true", help="Before starting to build: also run the Build line once")
     args = p.parse_args(argv)
 
     path = resolve_checks(args.target, args.root)
@@ -403,13 +480,15 @@ def main(argv=None):
         )
         return 2
 
-    errors, warnings, profile = check_file(path)
+    errors, warnings = check_file(path)
+    if args.execute and not errors:
+        errors += red_build(path, os.path.abspath(args.root))
     for w in warnings:
         print(f"  WARN  {w}")
     for e in errors:
         print(f"  ERROR {e}")
     fail = errors or (warnings and args.strict)
-    print(f"\nvalidate_checks: {len(errors)} error(s), {len(warnings)} warning(s) in {path} [profile: {profile or 'none'}]")
+    print(f"\nvalidate_checks: {len(errors)} error(s), {len(warnings)} warning(s) in {path}")
     return 1 if fail else 0
 
 

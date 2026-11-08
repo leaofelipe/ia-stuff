@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-lessons.py - deterministic bookkeeping for the spec-lean lessons layer.
+lessons.py - deterministic bookkeeping for the .specs lessons layer.
 
 The LLM supplies judgment (which failure happened, how to phrase the lesson, what
 signal grounds it). This script owns everything mechanical: IDs, distinct-feature
@@ -8,13 +8,13 @@ recurrence counting, candidate->confirmed promotion, pruning, demotion, and
 rendering the human/agent-readable playbook. Bookkeeping by hand is exactly what
 rots a lessons file, so it lives here, not in a prompt.
 
-Canonical state:  .notebook/specs/lessons.json   (machine-owned - do NOT hand-edit)
-Rendered view:    .notebook/specs/LESSONS.md      (regenerated on every write)
+Canonical state:  .specs/lessons.json   (machine-owned - do NOT hand-edit)
+Rendered view:    .specs/LESSONS.md      (regenerated on every write)
 
 Pure standard library. No dependencies. The script file lives in this skill's
 `scripts/` directory - invoke it as `python3 <skill-dir>/scripts/lessons.py ...`
 (never `python3 scripts/lessons.py` from a consuming project root). Run with
-cwd at the project root (the dir that contains .notebook/specs), or pass --root.
+cwd at the project root (the dir that contains .specs), or pass --root.
 
 Commands:
   add        Record a grounded lesson from a verification signal.
@@ -36,16 +36,19 @@ import re
 import sys
 import unicodedata
 
-STORE_REL = os.path.join(".notebook", "specs", "lessons.json")
-RENDER_REL = os.path.join(".notebook", "specs", "LESSONS.md")
+STORE_REL = os.path.join(".specs", "lessons.json")
+RENDER_REL = os.path.join(".specs", "LESSONS.md")
 
 SIGNALS = {
     "ac_gap": "Acceptance criterion not covered / failed",
-    "surviving_mutant": "Discrimination sensor mutant survived (weak test)",
+    "weak_test": "Test passes without holding its criterion",
     "spec_precision_gap": "Spec did not define a precise outcome",
     "spec_deviation": "Implementation diverged from spec/design (SPEC_DEVIATION)",
     "gate_fail": "Build-level gate check failed",
 }
+
+# stores written before a signal was renamed still carry the old name
+RENAMED_SIGNALS = {"surviving_mutant": "weak_test"}
 
 DEFAULTS = {"promote_threshold": 2, "window_days": 45, "quarantine_threshold": 2}
 
@@ -87,11 +90,17 @@ def _load(root):
     data.setdefault("schema", 1)
     data.setdefault("next_id", 1)
     data.setdefault("lessons", [])
+    for lesson in data["lessons"]:
+        old = lesson.get("signal")
+        if old in RENAMED_SIGNALS:
+            lesson["signal"] = RENAMED_SIGNALS[old]
+            if lesson.get("key", "").startswith(old + "::"):
+                lesson["key"] = lesson["signal"] + lesson["key"][len(old):]
     return data
 
 
 def _save(root, data):
-    os.makedirs(os.path.join(root, ".notebook", "specs"), exist_ok=True)
+    os.makedirs(os.path.join(root, ".specs"), exist_ok=True)
     with open(_store_path(root), "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
         f.write("\n")
@@ -148,7 +157,7 @@ def _key(signal, text):
 
 
 def _auto_prune(data):
-    """Drop candidates that never recurred within the window. Mutates data."""
+    """Drop candidates that never recurred within the window. Edits data in place."""
     threshold = data["promote_threshold"]
     window = data["window_days"]
     now = _dt.datetime.now(_dt.timezone.utc)
@@ -178,7 +187,7 @@ def _render(root, data):
     lines.append("# LESSONS - auto-maintained by scripts/lessons.py")
     lines.append("")
     lines.append("> Machine-owned. Do NOT hand-edit. Changes are overwritten on the next `lessons.py` write.")
-    lines.append("> Canonical state lives in `.notebook/specs/lessons.json`. Edit lessons only via the script.")
+    lines.append("> Canonical state lives in `.specs/lessons.json`. Edit lessons only via the script.")
     lines.append(f"> promote_threshold={data['promote_threshold']} distinct features · window_days={data['window_days']} · quarantine_threshold={data['quarantine_threshold']}")
     lines.append("")
 
@@ -253,7 +262,7 @@ def cmd_add(root, args):
         print("ERROR: --feature is required (the feature the signal came from).", file=sys.stderr)
         return 2
     if not source:
-        print("ERROR: --source is required (file:line / AC id / mutant id / SPEC_DEVIATION ref).", file=sys.stderr)
+        print("ERROR: --source is required (file:line / AC id / check id / SPEC_DEVIATION ref).", file=sys.stderr)
         print("       A lesson with no grounding in verification.md is an opinion, not a lesson. Refused.", file=sys.stderr)
         return 2
     if len(text) < 12:
@@ -369,8 +378,8 @@ def cmd_status(root, args):
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(prog="lessons.py", description="Deterministic lessons bookkeeping for spec-lean.")
-    p.add_argument("--root", default=".", help="Project root containing .notebook/specs/ (default: current dir)")
+    p = argparse.ArgumentParser(prog="lessons.py", description="Deterministic lessons bookkeeping for .specs/lessons.json.")
+    p.add_argument("--root", default=".", help="Project root containing .specs/ (default: current dir)")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sp = sub.add_parser("init", help="Create empty store + rendered file")
@@ -379,7 +388,7 @@ def main(argv=None):
     sp = sub.add_parser("add", help="Record a grounded lesson")
     sp.add_argument("--feature", required=True)
     sp.add_argument("--signal", required=True, choices=sorted(SIGNALS))
-    sp.add_argument("--source", required=True, help="file:line / AC id / mutant id / SPEC_DEVIATION ref")
+    sp.add_argument("--source", required=True, help="file:line / AC id / check id / SPEC_DEVIATION ref")
     sp.add_argument("--text", required=True, help="One terse, actionable sentence")
     sp.add_argument("--scope", default="", help="Optional: path/layer/tag for retrieval filtering")
     sp.set_defaults(fn=cmd_add)
@@ -402,6 +411,9 @@ def main(argv=None):
 
     sp = sub.add_parser("selftest", help="Run stdlib regressions (normalization)")
     sp.set_defaults(fn=lambda root, args: _selftest_norm())
+
+    for sp in sub.choices.values():
+        sp.add_argument("--root", default=argparse.SUPPRESS, help="Same as --root before the subcommand")
 
     args = p.parse_args(argv)
     root = os.path.abspath(args.root)

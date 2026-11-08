@@ -2,7 +2,7 @@
 
 Pacote de skills de IA.
 
-As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda saída que precisa ser gravada vai por padrão para a pasta `.notebook/` na raiz do projeto que as consome. Assim um brief do `handoff` fica num lugar previsível, onde outras skills e sessões podem encontrá-lo.
+As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda saída que precisa ser gravada vai por padrão para a pasta `.notebook/` na raiz do projeto que as consome. Assim um brief do `handoff` fica num lugar previsível, onde outras skills e sessões podem encontrá-lo. A exceção é o `spec-lean`, que grava seus artefatos em `.specs/`, como na versão oficial.
 
 **Algumas skills são pessoais; outras são forks de skills já existentes, adaptadas para o meu dia a dia.**
 
@@ -17,7 +17,7 @@ As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda sa
 | `/explain-pr` | Percorre um PR ou MR como aula, um item por vez: a base, depois cada conceito, depois como as peças se ligam. Explica o que foi feito, não é um code review. |
 | `/explain-plan` | Dá um overview didático de um plano ou spec que você passa (caminho ou link), em tópicos com o que está decidido e o que vale revisar, mais os achados novos conferidos no código. É só informativa: não implementa nem edita o plano. |
 | `/humanizer` | Reescreve texto com cara de IA para soar como quem escreveu, sem mudar o que o texto diz. |
-| `/spec-lean` | Spec Driven Development (SDD): Plan → Checks → Build → Verify, com os artefatos em `.notebook/specs/`. |
+| `/spec-lean` | Spec Driven Development (SDD): Plan → Checks → Build → Verify, com os artefatos em `.specs/`. |
 | `/deslop` | Tira do diff da branch o código com cara de IA (comentários, código que não precisava, etc). |
 | `/simplify` | Simplifica o código do diff, focando em abstrações desnecessárias, lógica que já existe em outro lugar do projeto e gargalos de performance. |
 | `/readable-code` | Melhora a legibilidade do código que mudou na branch, sem alterar comportamento: aninhamento, nomes, números mágicos, duplicação e comentários que explicam o "o quê". Entrega o plano e só aplica quando você pede. |
@@ -29,16 +29,24 @@ Todas as skills são MIT, exceto `spec-lean`, que mantém a CC-BY-4.0 do origina
 
 ```
 .notebook/
-├── handoff/                     # briefs do handoff
-│   └── dd-mm-yy-theme.md
-└── specs/                       # artefatos do spec-lean
-    ├── STATE.md                 # decisões (AD-NNN) + snapshot de handoff
-    ├── LESSONS.md               # gerado por scripts/lessons.py
-    ├── lessons.json
-    └── features/<feature>/
-        ├── plan.md
-        ├── checks.md
-        └── verification.md
+└── handoff/                     # briefs do handoff
+    └── dd-mm-yy-theme.md
+```
+
+## Layout do `.specs/`
+
+```
+.specs/                          # artefatos do spec-lean
+├── STATE.md                     # decisões (AD-NNN)
+├── LESSONS.md                   # gerado por scripts/lessons.py
+├── lessons.json
+└── features/<feature>/
+    ├── plan.md
+    ├── checks.md
+    ├── captures/                # fontes vinculantes e <capture>.running.png
+    ├── screens.md
+    ├── proofs.md                # gerado por scripts/check_proofs.py
+    └── verification.md
 ```
 
 ## Fluxo geral
@@ -70,20 +78,6 @@ flowchart TD
 6. **`explain-plan`** para entender e revisar o plano antes de construir: passe o caminho do `plan.md` (ou de outra spec) e revise tópico por tópico. Ela não muda nada; as decisões revisadas voltam para o `spec-lean`.
 7. Depois do spec-lean, **`deslop`** para tirar do diff o que tem cara de IA e, em seguida, **`simplify`** para a revisão de qualidade, performance e reuso.
 8. **`readable-code`** para deixar esse diff legível sem mudar o comportamento. Ela entrega o plano e só aplica quando você pede.
-
-## Configurar o `spec-lean`
-
-O `spec-lean` já vem com valores default, `profile: standard` e `budget: 180k`, que valem quando o `AGENTS.md` do projeto não diz nada. Só configure se quiser outros valores: adicione uma seção `## spec-lean` no `AGENTS.md` do projeto que o consome, no formato abaixo.
-
-```markdown
-## spec-lean
-
-profile: standard
-budget: 180k
-```
-
-- **`profile`** — quanto o Verifier checa: `light`, `standard` (default) ou `ui`. O `light` roda as provas e cobra uma assertion localizada por check. O `standard` também recalcula o `Coverage`, dá veredito nas linhas de `Test policy` e injeta falhas para ver se os testes pegam. O `ui` também compara as telas com o design.
-- **`budget`** — estimativa de tokens que um builder aguenta antes de a skill parar e perguntar se passa o trabalho para outro builder ou segue num só. Default: `180k`.
 
 ## Referências
 
