@@ -21,16 +21,20 @@ As skills trabalham dentro do mesmo ecossistema: uma alimenta a outra, e toda sa
 | `/deslop` | Tira do diff da branch o código com cara de IA (comentários, código que não precisava, etc). |
 | `/simplify` | Simplifica o código do diff, focando em abstrações desnecessárias, lógica que já existe em outro lugar do projeto e gargalos de performance. |
 | `/readable-code` | Melhora a legibilidade do código que mudou na branch, sem alterar comportamento: aninhamento, nomes, números mágicos, duplicação e comentários que explicam o "o quê". Entrega o plano e só aplica quando você pede. |
+| `/deep-code-review` | Revisa a branch ou o PR com evidência para cada apontamento e devolve a review no chat, com veredito pela severidade. Roda antes as checagens do próprio repo e passa os comentários por um filtro de ruído. Só publica no PR do GitHub ou no MR do GitLab, como uma única review com comentários inline, quando você pede. |
 | `/test-surgery` | Tira a redundância dos testes, só nos arquivos em que é chamada: testes repetidos viram tabela, setup repetido vira builder e o que não verifica nada sai. Um diff de cobertura linha a linha prova que nenhum comportamento se perdeu, e o resultado sai em tabelas no chat. |
 
-Todas as skills são MIT, exceto `spec-lean`, que mantém a CC-BY-4.0 do original, e `simplify`, adaptado de um comando do Cursor sem licença pública conhecida.
+Todas as skills são MIT, exceto `spec-lean` e `deep-code-review`, que mantêm a CC-BY-4.0 do original, e `simplify`, adaptado de um comando do Cursor sem licença pública conhecida.
 
 ## Layout do `.notebook/`
 
 ```
 .notebook/
-└── handoff/                     # briefs do handoff
-    └── dd-mm-yy-theme.md
+├── handoff/                     # briefs do handoff
+│   └── dd-mm-yy-theme.md
+└── reviews/                     # rodadas do deep-code-review
+    └── <branch>/
+        └── round-<N>.json
 ```
 
 ## Layout do `.specs/`
@@ -82,6 +86,7 @@ flowchart TD
 ## Referências
 
 - **`spec-lean`** — fork da skill da [Tech Leads Club](https://github.com/tech-leads-club/agent-skills), sob CC-BY-4.0.
+- **`deep-code-review`** — fork da skill `the-judge` da [Tech Leads Club](https://github.com/tech-leads-club/agent-skills), sob CC-BY-4.0.
 - **`deslop`** — fork do `deslop`, do plugin [cursor-team-kit](https://github.com/cursor/plugins) da Cursor, sob MIT.
 - **`simplify`** — adaptado do comando `/simplify` embutido no Cursor.
 - **`test-surgery`** — inspirado no [PR #2707 do kentcdodds/kody](https://github.com/kentcdodds/kody/pull/2707).
